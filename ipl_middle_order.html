@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IPL Middle Order Batsmen — Positions 4 & 5</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f7f6f2;
+    --surface: #ffffff;
+    --border: rgba(0,0,0,0.08);
+    --border-strong: rgba(0,0,0,0.15);
+    --text-primary: #0f0f0e;
+    --text-secondary: #52514e;
+    --text-muted: #898781;
+    --accent: #d4a017;
+    --grid: #e8e7e1;
+    --radius: 10px;
+
+    --header-bg: #0d0d0d;
+    --header-border: rgba(255,255,255,0.08);
+    --header-text: #ffffff;
+    --header-muted: rgba(255,255,255,0.45);
+    --header-sub: rgba(255,255,255,0.65);
+    --yellow: #f0c040;
+    --yellow-dim: rgba(240,192,64,0.12);
+  }
+
+  body {
+    background: var(--bg);
+    font-family: system-ui, -apple-system, sans-serif;
+    color: var(--text-primary);
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  .page-header {
+    background: var(--header-bg);
+    padding: 3rem 2rem 2.5rem;
+  }
+  .header-inner { max-width: 1100px; margin: 0 auto; }
+
+  .header-eyebrow {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--yellow);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .header-eyebrow::before {
+    content: '';
+    display: inline-block;
+    width: 24px; height: 2px;
+    background: var(--yellow);
+    border-radius: 1px;
+  }
+
+  .header-title {
+    font-family: Georgia, serif;
+    font-size: clamp(2rem, 4.5vw, 3.2rem);
+    font-weight: normal;
+    line-height: 1.12;
+    color: var(--header-text);
+    margin-bottom: 14px;
+  }
+  .header-title em {
+    font-style: italic;
+    color: var(--yellow);
+  }
+
+  .header-sub {
+    font-size: 14px;
+    color: var(--header-sub);
+    line-height: 1.65;
+    max-width: 580px;
+    margin-bottom: 2rem;
+  }
+
+  .header-divider {
+    height: 1px;
+    background: var(--header-border);
+    margin-bottom: 1.75rem;
+  }
+
+  .header-meta {
+    display: flex;
+    gap: 0;
+    flex-wrap: wrap;
+  }
+  .meta-stat {
+    padding: 0 2rem 0 0;
+    margin-right: 2rem;
+    border-right: 1px solid var(--header-border);
+  }
+  .meta-stat:last-child { border-right: none; }
+  .meta-stat .val {
+    font-size: 28px;
+    font-weight: 500;
+    color: var(--yellow);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .meta-stat .lbl {
+    font-size: 11px;
+    color: var(--header-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  /* ── BODY ── */
+  .page-body { max-width: 1100px; margin: 0 auto; padding: 2rem; }
+
+  /* ── SECTION CARDS ── */
+  .chart-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 2rem;
+    overflow: hidden;
+  }
+
+  .section-header {
+    padding: 1.25rem 1.5rem 1rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .section-num {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 3px;
+  }
+  .section-title { font-size: 15px; font-weight: 500; color: var(--text-primary); }
+  .section-desc { font-size: 13px; color: var(--text-secondary); margin-top: 3px; line-height: 1.5; }
+
+  .section-controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .section-controls label { font-size: 12px; color: var(--text-muted); }
+  .section-controls select {
+    font-size: 12px; padding: 5px 9px; border-radius: 6px;
+    border: 1px solid var(--border-strong); background: var(--bg);
+    color: var(--text-primary); cursor: pointer;
+  }
+
+  .chart-body { padding: 1.25rem 1.5rem 1.5rem; }
+
+  /* ── QUADRANT LEGEND ── */
+  .quad-legend { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 1rem; }
+  .ql {
+    font-size: 12px; padding: 8px 10px; border-radius: 8px;
+    border: 1px solid var(--border); color: var(--text-secondary);
+  }
+  .ql strong { display: block; font-size: 12px; font-weight: 500; color: var(--text-primary); margin-bottom: 2px; }
+  .ql-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 5px; vertical-align: 1px; }
+
+  /* ── LEGEND ROW ── */
+  .legend-row { display: flex; gap: 16px; flex-wrap: wrap; font-size: 12px; color: var(--text-secondary); margin-bottom: 10px; }
+  .legend-row .leg { display: flex; align-items: center; gap: 5px; }
+  .leg-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+
+  .size-legend { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; }
+  .size-legend span { color: var(--text-secondary); font-weight: 500; }
+
+  /* ── TOOLTIP ── */
+  .tooltip {
+    position: absolute; pointer-events: none;
+    background: #fff; border: 1px solid var(--border-strong);
+    border-radius: var(--radius); padding: 9px 13px;
+    font-size: 12px; color: var(--text-primary);
+    display: none; z-index: 20; min-width: 170px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+  }
+  .tooltip .t-name { font-weight: 500; font-size: 13px; margin-bottom: 5px; border-bottom: 1px solid var(--border); padding-bottom: 5px; }
+  .tooltip .t-row { display: flex; justify-content: space-between; gap: 16px; color: var(--text-secondary); margin-top: 3px; }
+  .tooltip .t-val { color: var(--text-primary); font-weight: 500; }
+
+  .chart-wrap { position: relative; }
+  canvas { display: block; }
+
+  /* ── INSIGHT CARDS ── */
+  .insight-block { margin-bottom: 1.25rem; }
+  .insight-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 10px;
+  }
+  .insight-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+  }
+  .insight-card.dark {
+    background: #1a1a1a;
+    border-color: rgba(255,255,255,0.08);
+  }
+  .ic-label {
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+  .insight-card.dark .ic-label { color: var(--yellow); }
+  .ic-text {
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--text-secondary);
+  }
+  .insight-card.dark .ic-text { color: rgba(255,255,255,0.55); }
+
+  /* ── SITE NAV ── */
+  .site-nav {
+    background: #000;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    padding: 0 2rem;
+  }
+  .site-nav-inner {
+    max-width: 1100px; margin: 0 auto;
+    display: flex; align-items: center;
+    height: 56px;
+    gap: 12px;
+  }
+  .site-nav-logo {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .site-nav-logo .logo-icon {
+    width: 26px; height: 26px; border-radius: 6px;
+    background: var(--yellow);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700; color: #000; flex-shrink: 0;
+    font-family: Georgia, serif;
+  }
+  .site-nav-name {
+    font-size: 18px; font-weight: 500;
+    color: #fff; letter-spacing: 0.01em;
+  }
+  .site-nav-name span { color: var(--yellow); }
+  .site-nav-divider {
+    width: 1px; height: 18px;
+    background: rgba(255,255,255,0.15);
+    margin-left: 4px;
+  }
+  .site-nav-sub {
+    font-size: 12px; color: rgba(255,255,255,0.4);
+    letter-spacing: 0.04em; text-transform: uppercase;
+  }
+
+  /* ── DARK SECTION (dot plot) ── */
+  .chart-section.dark {
+    background: #111;
+    border-color: rgba(255,255,255,0.08);
+  }
+  .chart-section.dark .section-header {
+    border-bottom-color: rgba(255,255,255,0.08);
+  }
+  .chart-section.dark .section-num  { color: var(--yellow); }
+  .chart-section.dark .section-title { color: #fff; }
+  .chart-section.dark .section-desc  { color: rgba(255,255,255,0.5); }
+  .chart-section.dark .section-controls label { color: rgba(255,255,255,0.4); }
+  .chart-section.dark .section-controls select {
+    background: #1a1a1a; border-color: rgba(255,255,255,0.15);
+    color: #fff;
+  }
+  .chart-section.dark .legend-row { color: rgba(255,255,255,0.5); }
+  .chart-section.dark .tooltip {
+    background: #1e1e1e; border-color: rgba(255,255,255,0.15); color: #fff;
+  }
+  .chart-section.dark .tooltip .t-name { border-bottom-color: rgba(255,255,255,0.1); }
+  .chart-section.dark .tooltip .t-row  { color: rgba(255,255,255,0.5); }
+  .chart-section.dark .tooltip .t-val  { color: #fff; }
+
+  /* ── FOOTER ── */
+  .page-footer {
+    background: var(--header-bg);
+    border-top: 1px solid var(--header-border);
+    padding: 1.5rem 2rem;
+    font-size: 12px;
+    color: var(--header-muted);
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<!-- ── SITE NAV ── -->
+<nav class="site-nav">
+  <div class="site-nav-inner">
+    <div class="site-nav-logo">
+      <div class="logo-icon">K</div>
+      <span class="site-nav-name"><span>Kumar Iyer</span> Cricket Analysis</span>
+    </div>
+    <div class="site-nav-divider"></div>
+    <span class="site-nav-sub">IPL · Positions 4 &amp; 5</span>
+  </div>
+</nav>
+
+<!-- ── HEADER ── -->
+<header>
+  <div class="page-header">
+    <div class="header-inner">
+      <div class="header-eyebrow">IPL Analysis · Batting positions 4 &amp; 5</div>
+      <h1 class="header-title">The <em>middle order</em> examined</h1>
+      <p class="header-sub">Comparing batsmen who have batted at number 4 or 5 in the IPL — across consistency, aggression, and volume. Minimum 30 innings across all seasons.</p>
+      <div class="header-divider"></div>
+      <div class="header-meta">
+        <div class="meta-stat"><div class="val">30</div><div class="lbl">Batsmen</div></div>
+        <div class="meta-stat"><div class="val">3</div><div class="lbl">Charts</div></div>
+        <div class="meta-stat"><div class="val">30+</div><div class="lbl">Min innings</div></div>
+        <div class="meta-stat"><div class="val">3,542</div><div class="lbl">Most runs (Dhoni)</div></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="page-body">
+
+  <!-- ── CHART 1: SCATTER ── -->
+  <div class="chart-section">
+    <div class="section-header">
+      <div>
+        <div class="section-num">01 — Scatter</div>
+        <div class="section-title">Average vs Strike Rate — who does both?</div>
+        <div class="section-desc">Each bubble is a batsman. X = strike rate, Y = batting average. Dashed lines mark the median. Bubble size = total runs scored.</div>
+      </div>
+      <div class="section-controls">
+        <label>Bubble size:</label>
+        <select id="s1BubbleMetric">
+          <option value="runs">Total runs</option>
+          <option value="sixes">Sixes</option>
+          <option value="fifties">Fifties</option>
+          <option value="inn">Innings</option>
+        </select>
+        <label>Min innings:</label>
+        <select id="s1MinInn">
+          <option value="30">30+</option>
+          <option value="50">50+</option>
+          <option value="75">75+</option>
+          <option value="100">100+</option>
+        </select>
+      </div>
+    </div>
+    <div class="chart-body">
+      <div class="insight-block">
+        <div class="insight-row">
+          <div class="insight-card">
+            <div class="ic-label">Elite quadrant</div>
+            <div class="ic-text">Dhoni, AB de Villiers, Suryakumar Yadav, Shreyas Iyer and Tilak Varma all sit top-right — the only batsmen combining a 37+ average with a 140+ strike rate. Klaasen (avg 44, SR 163) is arguably the most destructive of the group despite fewer innings.</div>
+          </div>
+          <div class="insight-card">
+            <div class="ic-label">The lone anchor</div>
+            <div class="ic-text">JP Duminy occupies the top-left quadrant almost alone — an exceptional average of 51.8 but a conservative SR of 127. A classical accumulator in a format that rarely rewards them, yet he sustained it across 43 innings.</div>
+          </div>
+          <div class="insight-card">
+            <div class="ic-label">Explosive finishers</div>
+            <div class="ic-text">Rinku Patidar (SR 170), Pooran (SR 156) and Maxwell (SR 152) are the bottom-right cluster — high risk, high reward. Patidar's SR is the highest of any player with 30+ innings, making him one of the most feared death-over hitters in the competition.</div>
+          </div>
+        </div>
+      </div>
+      <div class="size-legend">Bubble size — <span id="s1SizeLbl">Total runs</span></div>
+      <div class="chart-wrap">
+        <div style="position:relative;width:100%;height:420px;">
+          <canvas id="scatterChart" role="img" aria-label="Bubble chart comparing IPL middle-order batsmen by strike rate and batting average, bubble size is total runs"></canvas>
+        </div>
+        <div class="tooltip" id="s1Tip"></div>
+      </div>
+      <div class="quad-legend">
+        <div class="ql"><strong><span class="ql-dot" style="background:#2a78d6"></span>Top-right — elite</strong>High average + high SR: consistent and explosive</div>
+        <div class="ql"><strong><span class="ql-dot" style="background:#1baf7a"></span>Top-left — anchor</strong>High average, lower SR: builds innings, accumulates</div>
+        <div class="ql"><strong><span class="ql-dot" style="background:#eda100"></span>Bottom-right — finisher</strong>Lower average, high SR: high-risk, high-reward</div>
+        <div class="ql"><strong><span class="ql-dot" style="background:#888780"></span>Bottom-left — utility</strong>Lower average + SR: valued for other contributions</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CHART 2: BAR ── -->
+  <div class="chart-section">
+    <div class="section-header">
+      <div>
+        <div class="section-num">02 — Bar chart</div>
+        <div class="section-title">Rankings — top 15 by batting average</div>
+        <div class="section-desc">Sorted bar chart showing the top 15 batsmen. Value and innings shown at each bar end. Switch the metric to re-rank.</div>
+      </div>
+      <div class="section-controls">
+        <label>Sort by:</label>
+        <select id="s2SortCol">
+          <option value="runs">Total runs</option>
+          <option value="avg" selected>Average</option>
+          <option value="sr">Strike rate</option>
+          <option value="inn">Innings</option>
+          <option value="fifties">Fifties</option>
+          <option value="sixes">Sixes</option>
+        </select>
+        <label>Min innings:</label>
+        <select id="s2MinInn">
+          <option value="30">30+</option>
+          <option value="50">50+</option>
+          <option value="75">75+</option>
+          <option value="100">100+</option>
+        </select>
+      </div>
+    </div>
+    <div class="chart-body">
+      <div class="insight-block">
+        <div class="insight-row">
+          <div class="insight-card">
+            <div class="ic-label">Average — the story</div>
+            <div class="ic-text">Duminy leads all qualifiers at 51.8, a remarkable figure for a T20 middle-order bat. Dhoni (42.7) and Klaasen (44.2) follow — both known for finishing games, not just surviving. Iyer (43.7) is the standout Indian batsman in this metric, suggesting a consistency often underappreciated in the debate around India's number 4.</div>
+          </div>
+          <div class="insight-card">
+            <div class="ic-label">Volume vs efficiency</div>
+            <div class="ic-text">Karthik (136 innings, avg 26.9) and Yuvraj (106 innings, avg 26.8) illustrate how longevity and volume can mask modest averages. Compare them to Klaasen (42 innings, avg 44.2) — a player who came in later but made every knock count far more consistently.</div>
+          </div>
+          <div class="insight-card">
+            <div class="ic-label">The Indian contingent</div>
+            <div class="ic-text">Among Indians with 50+ innings at 4/5, Dhoni stands alone at the top. Pant (34.1) and Rayudu (28.7) are the next most prolific, though Tilak Varma — still early in his career — already averages 40.8 across 55 innings and looks like a future mainstay.</div>
+          </div>
+        </div>
+      </div>
+      <div class="legend-row">
+        <div class="leg"><span class="leg-dot" style="background:#2a78d6"></span>Top 5</div>
+        <div class="leg"><span class="leg-dot" style="background:#b4b2a9"></span>Others</div>
+        <span style="font-size:12px;color:var(--text-muted);margin-left:4px">· Value + innings shown at bar end</span>
+      </div>
+      <div class="chart-wrap">
+        <div style="position:relative;width:100%;">
+          <canvas id="barChart" role="img" aria-label="Horizontal bar chart ranking top 15 IPL middle-order batsmen by selected metric, innings count shown beside each bar"></canvas>
+        </div>
+        <div class="tooltip" id="s2Tip"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CHART 3: DOT PLOT ── -->
+  <div class="chart-section dark">
+    <div class="section-header">
+      <div>
+        <div class="section-num">03 — Dot plot</div>
+        <div class="section-title">Full field — strike rate ranked</div>
+        <div class="section-desc">Every batsman in one view, defaulting to strike rate. Hover for full stats. Change the metric to instantly re-rank.</div>
+      </div>
+      <div class="section-controls">
+        <label>Metric:</label>
+        <select id="s3Metric">
+          <option value="runs">Total runs</option>
+          <option value="avg">Average</option>
+          <option value="sr" selected>Strike rate</option>
+          <option value="inn">Innings</option>
+          <option value="sixes">Sixes</option>
+          <option value="fifties">Fifties</option>
+        </select>
+        <label>Min innings:</label>
+        <select id="s3MinInn">
+          <option value="30">30+</option>
+          <option value="50">50+</option>
+          <option value="75">75+</option>
+          <option value="100">100+</option>
+        </select>
+      </div>
+    </div>
+    <div class="chart-body">
+      <div class="insight-block dark">
+        <div class="insight-row">
+          <div class="insight-card dark">
+            <div class="ic-label">Strike rate king</div>
+            <div class="ic-text">Rinku Patidar leads all 30 batsmen with a SR of 170.5 — 15 points clear of his nearest rival Klaasen (163.3). For context, he scores nearly 1.7 runs every ball he faces. In a competition that increasingly rewards boundary-hitters at the death, that number is extraordinary.</div>
+          </div>
+          <div class="insight-card dark">
+            <div class="ic-label">The SR vs average trade-off</div>
+            <div class="ic-text">Suryakumar Yadav (SR 156) and Nicholas Pooran (SR 156) sit just below Klaasen, but with lower averages than the elite group. They represent a clear finisher archetype — maximise output when set, accept the dismissal risk. AB de Villiers (SR 150, avg 37.7) remains the gold standard for combining both.</div>
+          </div>
+          <div class="insight-card dark">
+            <div class="ic-label">The slower end</div>
+            <div class="ic-text">Tiwary (SR 113), Uthappa (SR 117) and Pandey (SR 118) are at the bottom of the SR table — all below 120. In the modern IPL, these rates are increasingly hard to justify for specialist batsmen unless backed by exceptional averages, which none of them post.</div>
+          </div>
+        </div>
+      </div>
+      <div class="legend-row">
+        <div class="leg"><span class="leg-dot" style="background:#f0c040"></span>Top 5</div>
+        <div class="leg"><span class="leg-dot" style="background:#3d3d3d;border:1px solid #555"></span>Others</div>
+      </div>
+      <div class="chart-wrap">
+        <div style="position:relative;width:100%;">
+          <canvas id="dotChart" role="img" aria-label="Dot plot ranking all IPL middle-order batsmen by selected metric with connecting lines to axis"></canvas>
+        </div>
+        <div class="tooltip" id="s3Tip"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer class="page-footer">
+  Data derived from ball-by-ball IPL records · Positions inferred from batting order of first appearance per innings · Minimum 30 innings at positions 4 or 5
+</footer>
+
+<script>
+const ALL = [
+  {name:"MS Dhoni",inn:140,runs:3542,hs:79,avg:42.67,sr:141.96,fours:257,sixes:161,fifties:16,hundreds:0},
+  {name:"KD Karthik",inn:136,runs:2850,hs:97,avg:26.89,sr:132.07,fours:270,sixes:88,fifties:14,hundreds:0},
+  {name:"RG Sharma",inn:105,runs:2832,hs:87,avg:32.55,sr:130.09,fours:218,sixes:123,fifties:20,hundreds:0},
+  {name:"RR Pant",inn:100,runs:2830,hs:128,avg:34.10,sr:145.28,fours:248,sixes:133,fifties:15,hundreds:1},
+  {name:"AB de Villiers",inn:103,runs:2793,hs:90,avg:37.74,sr:150.08,fours:208,sixes:144,fifties:21,hundreds:0},
+  {name:"DA Miller",inn:111,runs:2695,hs:101,avg:38.50,sr:143.05,fours:187,sixes:132,fifties:14,hundreds:1},
+  {name:"Yuvraj Singh",inn:106,runs:2354,hs:83,avg:26.75,sr:129.91,fours:187,sixes:126,fifties:12,hundreds:0},
+  {name:"YK Pathan",inn:86,runs:2062,hs:100,avg:34.95,sr:145.21,fours:165,sixes:101,fifties:9,hundreds:1},
+  {name:"AT Rayudu",inn:92,runs:2034,hs:81,avg:28.65,sr:125.17,fours:156,sixes:85,fifties:11,hundreds:0},
+  {name:"GJ Maxwell",inn:93,runs:2015,hs:89,avg:25.19,sr:151.73,fours:166,sixes:111,fifties:13,hundreds:0},
+  {name:"SA Yadav",inn:58,runs:1881,hs:102,avg:37.62,sr:155.97,fours:186,sixes:84,fifties:14,hundreds:1},
+  {name:"SS Iyer",inn:59,runs:1834,hs:101,avg:43.67,sr:144.18,fours:154,sixes:79,fifties:15,hundreds:1},
+  {name:"Tilak Varma",inn:55,runs:1673,hs:101,avg:40.80,sr:145.73,fours:133,sixes:80,fifties:11,hundreds:1},
+  {name:"KA Pollard",inn:85,runs:1600,hs:87,avg:24.62,sr:141.47,fours:99,sixes:101,fifties:6,hundreds:0},
+  {name:"H Klaasen",inn:42,runs:1548,hs:104,avg:44.23,sr:163.29,fours:109,sixes:84,fifties:12,hundreds:1},
+  {name:"N Pooran",inn:65,runs:1464,hs:77,avg:29.28,sr:155.91,fours:97,sixes:100,fifties:6,hundreds:0},
+  {name:"S Dube",inn:51,runs:1444,hs:95,avg:38.00,sr:148.41,fours:88,sixes:94,fifties:9,hundreds:0},
+  {name:"N Rana",inn:55,runs:1380,hs:85,avg:28.75,sr:133.85,fours:109,sixes:71,fifties:7,hundreds:0},
+  {name:"RA Jadeja",inn:71,runs:1378,hs:77,avg:29.96,sr:132.76,fours:112,sixes:46,fifties:4,hundreds:0},
+  {name:"R Parag",inn:47,runs:1329,hs:95,avg:33.23,sr:152.58,fours:95,sixes:81,fifties:7,hundreds:0},
+  {name:"HH Pandya",inn:62,runs:1327,hs:87,avg:32.37,sr:143.00,fours:110,sixes:61,fifties:3,hundreds:0},
+  {name:"MK Tiwary",inn:57,runs:1308,hs:75,avg:31.14,sr:112.86,fours:113,sixes:32,fifties:6,hundreds:0},
+  {name:"JP Duminy",inn:43,runs:1244,hs:74,avg:51.83,sr:126.81,fours:68,sixes:51,fifties:8,hundreds:0},
+  {name:"MP Stoinis",inn:58,runs:1189,hs:89,avg:27.65,sr:145.71,fours:91,sixes:65,fifties:7,hundreds:0},
+  {name:"DJ Hussey",inn:54,runs:1157,hs:68,avg:28.93,sr:124.14,fours:81,sixes:53,fifties:4,hundreds:0},
+  {name:"RM Patidar",inn:37,runs:1100,hs:93,avg:33.33,sr:170.54,fours:67,sixes:79,fifties:11,hundreds:0},
+  {name:"MK Pandey",inn:49,runs:1070,hs:81,avg:26.75,sr:118.49,fours:72,sixes:28,fifties:6,hundreds:0},
+  {name:"SR Watson",inn:46,runs:1044,hs:76,avg:27.47,sr:144.80,fours:83,sixes:61,fifties:7,hundreds:0},
+  {name:"EJG Morgan",inn:51,runs:1033,hs:68,avg:24.60,sr:124.16,fours:82,sixes:48,fifties:4,hundreds:0},
+  {name:"RV Uthappa",inn:52,runs:1007,hs:68,avg:22.38,sr:116.69,fours:80,sixes:39,fifties:4,hundreds:0},
+];
+
+const FMT  = {runs:v=>v.toLocaleString(),avg:v=>v.toFixed(2),sr:v=>v.toFixed(2),inn:v=>v,sixes:v=>v,fifties:v=>v};
+const LABELS = {runs:"Total runs",avg:"Batting average",sr:"Strike rate",inn:"Innings",sixes:"Sixes",fifties:"Fifties"};
+const BUBBLE_LABELS = {runs:"Total runs",sixes:"Sixes",fifties:"Fifties",inn:"Innings"};
+
+function shortName(n) { const p=n.split(' '); return p.length>1 ? p[0][0]+'. '+p.slice(1).join(' ') : n; }
+function lastName(n)  { return n.split(' ').slice(-1)[0]; }
+
+function tipHtml(d) {
+  return `<div class="t-name">${d.name}</div>
+    <div class="t-row"><span>Innings</span><span class="t-val">${d.inn}</span></div>
+    <div class="t-row"><span>Total runs</span><span class="t-val">${d.runs.toLocaleString()}</span></div>
+    <div class="t-row"><span>Average</span><span class="t-val">${d.avg.toFixed(2)}</span></div>
+    <div class="t-row"><span>Strike rate</span><span class="t-val">${d.sr.toFixed(2)}</span></div>
+    <div class="t-row"><span>Sixes</span><span class="t-val">${d.sixes}</span></div>
+    <div class="t-row"><span>Fifties</span><span class="t-val">${d.fifties}</span></div>`;
+}
+
+function posTip(tip, x, y, w) {
+  let tx = x + 14;
+  if (tx + 185 > w) tx = x - 199;
+  tip.style.left = tx + 'px';
+  tip.style.top  = (y - 10) + 'px';
+}
+
+/* ── CHART 1: SCATTER ── */
+let s1Chart = null, s1Bubble = 'runs', s1MinInn = 30;
+
+function renderScatter() {
+  const data = ALL.filter(d => d.inn >= s1MinInn);
+  const srMed = 138, avgMed = 30;
+  const bVals = data.map(d => d[s1Bubble]);
+  const bMin = Math.min(...bVals), bMax = Math.max(...bVals);
+
+  const qA = { tr:'rgba(42,120,214,0.72)', tl:'rgba(27,175,122,0.72)', br:'rgba(237,161,0,0.72)', bl:'rgba(136,135,128,0.60)' };
+  const qB = { tr:'#2a78d6', tl:'#1baf7a', br:'#eda100', bl:'#888780' };
+  function quad(d) {
+    if (d.sr >= srMed && d.avg >= avgMed) return 'tr';
+    if (d.sr <  srMed && d.avg >= avgMed) return 'tl';
+    if (d.sr >= srMed && d.avg <  avgMed) return 'br';
+    return 'bl';
+  }
+
+  const points = data.map(d => {
+    const bv = d[s1Bubble];
+    const r  = 6 + (bv - bMin) / (bMax - bMin + 0.001) * 22;
+    const q  = quad(d);
+    return { x: d.sr, y: d.avg, r, _d: d, backgroundColor: qA[q], borderColor: qB[q], borderWidth: 1.5 };
+  });
+
+  const srVals  = data.map(d => d.sr);
+  const avgVals = data.map(d => d.avg);
+
+  if (s1Chart) s1Chart.destroy();
+  s1Chart = new Chart(document.getElementById('scatterChart'), {
+    type: 'bubble',
+    data: { datasets: [{ data: points, pointStyle: 'circle' }] },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      layout: { padding: { top: 20, right: 20, bottom: 8, left: 8 } },
+      plugins: { legend: { display: false }, tooltip: { enabled: false } },
+      scales: {
+        x: { min: Math.min(...srVals)-5, max: Math.max(...srVals)+5,
+             ticks: { color:'#898781', font:{size:11} }, grid: { color:'#e8e7e1' },
+             title: { display:true, text:'Strike rate', color:'#52514e', font:{size:12} } },
+        y: { min: Math.min(...avgVals)-3, max: Math.max(...avgVals)+4,
+             ticks: { color:'#898781', font:{size:11} }, grid: { color:'#e8e7e1' },
+             title: { display:true, text:'Batting average', color:'#52514e', font:{size:12} } }
+      }
+    },
+    plugins: [
+      { id:'crosshairs', afterDraw(chart) {
+          const { ctx, chartArea:{left,right,top,bottom}, scales:{x,y} } = chart;
+          const cx = x.getPixelForValue(srMed), cy = y.getPixelForValue(avgMed);
+          ctx.save(); ctx.setLineDash([4,4]);
+          ctx.strokeStyle = 'rgba(0,0,0,0.1)'; ctx.lineWidth = 1;
+          ctx.beginPath(); ctx.moveTo(cx,top);  ctx.lineTo(cx,bottom); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(left,cy); ctx.lineTo(right,cy);  ctx.stroke();
+          ctx.restore();
+      }},
+      { id:'nameLabels', afterDatasetsDraw(chart) {
+          const { ctx, data, scales:{x,y} } = chart;
+          ctx.save(); ctx.font='10px system-ui,sans-serif';
+          ctx.textAlign='center'; ctx.textBaseline='bottom'; ctx.fillStyle='#52514e';
+          data.datasets[0].data.forEach(pt => {
+            ctx.fillText(lastName(pt._d.name), x.getPixelForValue(pt.x), y.getPixelForValue(pt.y)-pt.r-3);
+          });
+          ctx.restore();
+      }}
+    ]
+  });
+
+  document.getElementById('s1SizeLbl').textContent = BUBBLE_LABELS[s1Bubble];
+  const tip = document.getElementById('s1Tip');
+  const canvas = document.getElementById('scatterChart');
+  canvas.onmousemove = function(e) {
+    const rect = canvas.getBoundingClientRect();
+    const pts = s1Chart.getElementsAtEventForMode(e,'nearest',{intersect:true},true);
+    if (pts.length) {
+      tip.style.display='block';
+      tip.innerHTML = tipHtml(data[pts[0].index]);
+      posTip(tip, e.clientX-rect.left, e.clientY-rect.top, rect.width);
+    } else tip.style.display='none';
+  };
+  canvas.onmouseleave = () => tip.style.display='none';
+}
+document.getElementById('s1BubbleMetric').addEventListener('change', e => { s1Bubble=e.target.value; renderScatter(); });
+document.getElementById('s1MinInn').addEventListener('change',       e => { s1MinInn=parseInt(e.target.value); renderScatter(); });
+
+/* ── CHART 2: BAR ── */
+let s2Chart = null, s2Sort = 'avg', s2MinInn = 30;
+
+const innPlugin = {
+  id: 'innLabels',
+  afterDatasetsDraw(chart) {
+    const { ctx, scales: { x } } = chart;
+    const meta = chart.getDatasetMeta(0);
+    const dataset = chart.config._barData || [];
+    ctx.save();
+    ctx.font = '11px system-ui, sans-serif';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#52514e';
+    meta.data.forEach((bar, i) => {
+      const d = dataset[i];
+      if (!d) return;
+      const val   = FMT[s2Sort](d[s2Sort]);
+      const label = `${val}  ·  ${d.inn} inn`;
+      const xPos  = bar.x + 6;
+      const avail = x.right - xPos;
+      if (avail > 30) ctx.fillText(label, xPos, bar.y);
+    });
+    ctx.restore();
+  }
+};
+
+function renderBar() {
+  const data      = ALL.filter(d => d.inn >= s2MinInn).sort((a,b) => b[s2Sort]-a[s2Sort]).slice(0,15);
+  const vals      = data.map(d => d[s2Sort]);
+  const bgColors  = data.map((_,i) => i < 5 ? '#2a78d6' : '#b4b2a9');
+  const ROW_H     = 42;
+  const H         = data.length * ROW_H + 60;
+  const canvas    = document.getElementById('barChart');
+  canvas.style.height = H + 'px';
+
+  /* compute right padding so labels never overflow */
+  const maxVal   = Math.max(...vals);
+  const labelPad = 80; /* px reserved for the inline label */
+
+  if (s2Chart) s2Chart.destroy();
+  s2Chart = new Chart(canvas, {
+    type: 'bar',
+    data: {
+      labels: data.map(d => shortName(d.name)),
+      datasets: [{
+        data: vals,
+        backgroundColor: bgColors,
+        borderRadius: 4,
+        barThickness: 20,
+        borderWidth: 0,
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      layout: { padding: { right: labelPad, left: 4, top: 4, bottom: 4 } },
+      plugins: { legend: { display: false }, tooltip: { enabled: false } },
+      scales: {
+        x: {
+          ticks: { color: '#898781', font: { size: 11 } },
+          grid:  { color: '#e8e7e1' },
+          title: { display: true, text: LABELS[s2Sort], color: '#52514e', font: { size: 12 } },
+          max: maxVal * 1.02,
+        },
+        y: {
+          ticks: { color: '#0f0f0e', font: { size: 13 }, crossAlign: 'far' },
+          grid:  { display: false },
+        }
+      }
+    },
+    plugins: [innPlugin],
+    _barData: data,
+  });
+  s2Chart.config._barData = data;
+
+  const tip    = document.getElementById('s2Tip');
+  const touch  = 'ontouchstart' in window;
+
+  function showTip(e, clientX, clientY) {
+    const rect = canvas.getBoundingClientRect();
+    const pts  = s2Chart.getElementsAtEventForMode(e, 'nearest', { intersect: false, axis: 'y' }, true);
+    if (pts.length) {
+      tip.style.display = 'block';
+      tip.innerHTML = tipHtml(data[pts[0].index]);
+      posTip(tip, clientX - rect.left, clientY - rect.top, rect.width);
+    } else {
+      tip.style.display = 'none';
+    }
+  }
+
+  canvas.onmousemove  = e => showTip(e, e.clientX, e.clientY);
+  canvas.onmouseleave = () => tip.style.display = 'none';
+  if (touch) {
+    canvas.ontouchstart = e => { e.preventDefault(); const t = e.touches[0]; showTip(e, t.clientX, t.clientY); };
+    canvas.ontouchend   = () => setTimeout(() => tip.style.display = 'none', 1800);
+  }
+}
+document.getElementById('s2SortCol').addEventListener('change', e => { s2Sort = e.target.value; renderBar(); });
+document.getElementById('s2MinInn').addEventListener('change',  e => { s2MinInn = parseInt(e.target.value); renderBar(); });
+
+/* ── CHART 3: DOT PLOT ── */
+let s3Chart=null, s3Metric='sr', s3MinInn=30;
+
+function renderDot() {
+  const data = ALL.filter(d => d.inn >= s3MinInn).sort((a,b) => b[s3Metric]-a[s3Metric]);
+  const canvas = document.getElementById('dotChart');
+  canvas.style.height = (data.length * 28 + 80) + 'px';
+
+  const vals     = data.map(d => d[s3Metric]);
+  const bgColors = data.map((_,i) => i<5 ? '#f0c040' : '#3d3d3d');
+  const bdColors = data.map((_,i) => i<5 ? '#d4a017' : '#555');
+
+  if (s3Chart) s3Chart.destroy();
+  s3Chart = new Chart(canvas, {
+    type:'bar',
+    data:{
+      labels: data.map(d=>shortName(d.name)),
+      datasets:[
+        { data:vals, backgroundColor:bgColors, borderWidth:0, barThickness:2, borderRadius:0, order:2 },
+        { data:vals, type:'scatter', backgroundColor:bgColors, borderColor:bdColors,
+          borderWidth:1.5, pointRadius:6, pointHoverRadius:8, pointStyle:'circle', order:1 }
+      ]
+    },
+    options:{
+      indexAxis:'y', responsive:true, maintainAspectRatio:false,
+      layout:{ padding:{right:16, left:4} },
+      plugins:{ legend:{display:false}, tooltip:{enabled:false} },
+      scales:{
+        x:{ ticks:{color:'#898781',font:{size:11}, callback:v=>FMT[s3Metric](v)}, grid:{color:'#2a2a2a'},
+            title:{display:true, text:LABELS[s3Metric], color:'#aaa', font:{size:12}} },
+        y:{ ticks:{color:'#ccc',font:{size:12},crossAlign:'far'}, grid:{display:false} }
+      }
+    }
+  });
+
+  const tip=document.getElementById('s3Tip');
+  canvas.onmousemove = function(e) {
+    const rect=canvas.getBoundingClientRect();
+    const pts=s3Chart.getElementsAtEventForMode(e,'nearest',{intersect:false,axis:'y'},true);
+    if (pts.length) {
+      const d=data[pts[0].index];
+      tip.style.display='block';
+      tip.innerHTML=`<div class="t-name">${d.name}</div>
+        <div class="t-row"><span>${LABELS[s3Metric]}</span><span class="t-val">${FMT[s3Metric](d[s3Metric])}</span></div>
+        <div class="t-row"><span>Innings</span><span class="t-val">${d.inn}</span></div>
+        <div class="t-row"><span>Total runs</span><span class="t-val">${d.runs.toLocaleString()}</span></div>
+        <div class="t-row"><span>Average</span><span class="t-val">${d.avg.toFixed(2)}</span></div>
+        <div class="t-row"><span>Strike rate</span><span class="t-val">${d.sr.toFixed(2)}</span></div>
+        <div class="t-row"><span>Sixes</span><span class="t-val">${d.sixes}</span></div>
+        <div class="t-row"><span>Fifties</span><span class="t-val">${d.fifties}</span></div>`;
+      posTip(tip, e.clientX-rect.left, e.clientY-rect.top, rect.width);
+    } else tip.style.display='none';
+  };
+  canvas.onmouseleave = () => tip.style.display='none';
+}
+document.getElementById('s3Metric').addEventListener('change', e => { s3Metric=e.target.value; renderDot(); });
+document.getElementById('s3MinInn').addEventListener('change', e => { s3MinInn=parseInt(e.target.value); renderDot(); });
+
+renderScatter();
+renderBar();
+renderDot();
+</script>
+</body>
+</html>

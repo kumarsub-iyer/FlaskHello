@@ -8,6 +8,7 @@
   "routes": [
     { "src": "/slr_test", "dest": "/simple_linear_reg_chart.html" },
     { "src": "/ipl_allrounders", "dest": "/ipl_indian_allrounders.html" },
+     { "src": "/ipl_middle_order", "dest": "/ipl_middle_order.html" },
     { "src": "/(.*)", "dest": "app.py"}
   ]
 }
