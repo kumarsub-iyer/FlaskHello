@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Indian IPL All-Rounders — 2022 to 2026</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,400;0,600;0,700;1,400&family=Barlow+Condensed:wght@700;800&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --green:   #1a6b3c;
+    --gold:    #c8992a;
+    --cream:   #f7f4ee;
+    --ink:     #141414;
+    --muted:   #6b6b5e;
+    --border:  #d6d1c4;
+    --surface: #ffffff;
+
+    --jadeja:  #1a6b3c;
+    --hardik:  #c8440a;
+    --krunal:  #1a5c8a;
+    --axar:    #7c3b9e;
+    --ashwin:  #0f7a6e;
+    --shahbaz: #b07c10;
+    --nitish:  #993556;
+  }
+
+  body { font-family: 'Barlow', sans-serif; background: var(--cream); color: var(--ink); min-height: 100vh; }
+
+  .hero {
+    background: var(--ink);
+    color: var(--cream);
+    padding: 3rem 2rem 2.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(90deg, transparent, transparent 59px, rgba(255,255,255,0.03) 59px, rgba(255,255,255,0.03) 60px);
+    pointer-events: none;
+  }
+  .hero-inner { max-width: 900px; margin: 0 auto; position: relative; }
+  .hero-eyebrow {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 12px; font-weight: 700;
+    letter-spacing: 0.15em; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 12px;
+  }
+  .hero-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: clamp(2.4rem, 6vw, 4rem);
+    font-weight: 800; line-height: 1;
+    letter-spacing: -0.01em; margin-bottom: 1rem;
+  }
+  .hero-title em { color: var(--gold); font-style: normal; }
+  .hero-desc { font-size: 15px; color: rgba(247,244,238,0.65); max-width: 560px; line-height: 1.6; }
+  .hero-method {
+    margin-top: 12px;
+    font-size: 12px;
+    color: rgba(247,244,238,0.4);
+    font-style: italic;
+    max-width: 560px;
+    line-height: 1.6;
+  }
+  .hero-stats {
+    display: flex; gap: 2rem; margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    flex-wrap: wrap;
+  }
+  .hero-stat-val {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 2rem; font-weight: 800;
+    color: var(--gold); line-height: 1;
+  }
+  .hero-stat-label {
+    font-size: 12px; color: rgba(247,244,238,0.5);
+    margin-top: 3px; text-transform: uppercase; letter-spacing: 0.08em;
+  }
+
+  .main { max-width: 900px; margin: 0 auto; padding: 2rem; }
+
+  .section-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 10px;
+  }
+
+  .filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 2rem; }
+  .filter-btn {
+    font-family: 'Barlow', sans-serif;
+    font-size: 13px; font-weight: 600;
+    padding: 6px 16px; border-radius: 2px;
+    cursor: pointer; border: 1.5px solid var(--border);
+    background: transparent; color: var(--muted);
+    transition: all 0.15s;
+  }
+  .filter-btn:hover { border-color: var(--ink); color: var(--ink); }
+  .filter-btn.active { background: var(--ink); color: var(--cream); border-color: var(--ink); }
+
+  .chart-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 4px; padding: 1.5rem;
+    margin-bottom: 2rem; position: relative;
+  }
+  .chart-card-title { font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+  .chart-card-sub { font-size: 13px; color: var(--muted); margin-bottom: 1.25rem; }
+
+  .legend { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 1rem; }
+  .legend-item { display: flex; align-items: center; gap: 7px; font-size: 13px; color: var(--muted); }
+  .legend-dot { width: 11px; height: 11px; border-radius: 50%; flex-shrink: 0; }
+
+  .tip {
+    position: absolute;
+    background: var(--ink); color: var(--cream);
+    border-radius: 4px; padding: 10px 14px;
+    font-size: 13px; pointer-events: none;
+    display: none; z-index: 10;
+    min-width: 170px; line-height: 1.6;
+  }
+  .tip strong { font-weight: 600; color: var(--gold); }
+
+  .table-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 4px; overflow: hidden; margin-bottom: 2rem;
+  }
+  .table-head {
+    display: grid; grid-template-columns: 2.5fr 1fr 1fr 1fr;
+    padding: 10px 20px;
+    background: var(--ink); color: var(--cream);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 12px; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase;
+  }
+  .table-row {
+    display: grid; grid-template-columns: 2.5fr 1fr 1fr 1fr;
+    padding: 11px 20px; border-bottom: 1px solid var(--border);
+    font-size: 14px; align-items: center; transition: background 0.1s;
+  }
+  .table-row:last-child { border-bottom: none; }
+  .table-row:hover { background: var(--cream); }
+  .p-name { font-weight: 600; }
+  .p-season { font-size: 12px; color: var(--muted); margin-left: 8px; font-weight: 400; }
+  .num { text-align: right; }
+  .wkt-val { text-align: right; font-weight: 700; color: var(--green); font-family: 'Barlow Condensed', sans-serif; font-size: 16px; }
+
+  .insights { margin-bottom: 2rem; }
+  .insights-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 20px; font-weight: 700;
+    margin-bottom: 1rem; padding-bottom: 10px;
+    border-bottom: 2px solid var(--ink);
+  }
+  .insight-list { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+  .insight-item {
+    display: flex; gap: 14px; align-items: flex-start;
+    font-size: 14px; line-height: 1.6; color: var(--muted);
+  }
+  .insight-bullet {
+    flex-shrink: 0; width: 24px; height: 24px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 12px; font-weight: 800; color: var(--cream); margin-top: 1px;
+  }
+  .insight-item strong { color: var(--ink); font-weight: 600; }
+
+  .footer {
+    border-top: 1px solid var(--border);
+    padding: 1.5rem 2rem; text-align: center;
+    font-size: 12px; color: var(--muted);
+    max-width: 900px; margin: 0 auto;
+  }
+
+  @media (max-width: 600px) {
+    .hero { padding: 2rem 1.25rem; }
+    .main { padding: 1.25rem; }
+    .hero-stats { gap: 1.25rem; }
+    .table-head, .table-row { grid-template-columns: 2fr 1fr 1fr; }
+    .table-head > *:nth-child(4), .table-row > *:nth-child(4) { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero-inner">
+    <div class="hero-eyebrow">IPL 2022 – 2026 · Indian &amp; domestic players</div>
+    <h1 class="hero-title">The <em>All-Rounders</em><br>who dominated</h1>
+    <p class="hero-desc">Players who scored more than 150 runs <em>and</em> took more than 5 wickets in a single IPL season — Indian and domestic players only, across the last five seasons.</p>
+    <div class="hero-stats">
+      <div>
+        <div class="hero-stat-val">17</div>
+        <div class="hero-stat-label">Qualifying seasons</div>
+      </div>
+      <div>
+        <div class="hero-stat-val">7</div>
+        <div class="hero-stat-label">Unique players</div>
+      </div>
+      <div>
+        <div class="hero-stat-val">4</div>
+        <div class="hero-stat-label">Jadeja qualifications</div>
+      </div>
+      <div>
+        <div class="hero-stat-val">5</div>
+        <div class="hero-stat-label">Axar Patel qualifications</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="main">
+
+  <div class="section-label">Filter by season</div>
+  <div class="filters" id="filters">
+    <button class="filter-btn active" data-f="all">All seasons</button>
+    <button class="filter-btn" data-f="season:2022">2022</button>
+    <button class="filter-btn" data-f="season:2023">2023</button>
+    <button class="filter-btn" data-f="season:2024">2024</button>
+    <button class="filter-btn" data-f="season:2025">2025</button>
+    <button class="filter-btn" data-f="season:2026">2026</button>
+  </div>
+
+  <div class="chart-card">
+    <div class="chart-card-title">Runs vs wickets — bubble chart</div>
+    <div class="chart-card-sub">Bubble size reflects wicket count. Hover a bubble for details.</div>
+    <div class="legend" id="legend"></div>
+    <canvas id="bubbleChart" height="320"></canvas>
+    <div class="tip" id="tip"></div>
+  </div>
+
+  <div class="section-label">Full results</div>
+  <div class="table-card">
+    <div class="table-head">
+      <div>Player</div>
+      <div class="num">Runs</div>
+      <div class="num">Wickets</div>
+      <div class="num">Season</div>
+    </div>
+    <div id="tableBody"></div>
+  </div>
+
+  <div class="insights">
+    <div class="insights-title">Key takeaways</div>
+    <ul class="insight-list">
+      <li class="insight-item">
+        <div class="insight-bullet" style="background:var(--jadeja)">1</div>
+        <div><strong>Jadeja is the standout performer</strong> — the only player to qualify in 4 of the 5 seasons. His 2023 campaign (20 wickets + 190 runs) is the single best all-round season of this era.</div>
+      </li>
+      <li class="insight-item">
+        <div class="insight-bullet" style="background:var(--axar)">2</div>
+        <div><strong>Axar Patel qualifies in all 5 seasons</strong> — the most consistent Indian all-rounder of this period, quietly becoming an indispensable match-winner in both departments.</div>
+      </li>
+      <li class="insight-item">
+        <div class="insight-bullet" style="background:var(--hardik)">3</div>
+        <div><strong>Hardik Pandya qualifies 3 times</strong>, with his 2022 season (487 runs + 8 wickets, leading Gujarat Titans to the title) remaining his career-best performance in this window.</div>
+      </li>
+      <li class="insight-item">
+        <div class="insight-bullet" style="background:var(--nitish)">4</div>
+        <div><strong>Nithish Kumar Reddy is the only new name in 2026</strong> — 302 runs and 8 wickets in just his third IPL season signals a bright future as a genuine Indian all-rounder.</div>
+      </li>
+      <li class="insight-item">
+        <div class="insight-bullet" style="background:var(--muted)">5</div>
+        <div><strong>2025 is the thinnest year</strong> — only Hardik and Jadeja qualify, suggesting the depth of Indian all-round talent dipped before Nithish's 2026 breakthrough.</div>
+      </li>
+    </ul>
+  </div>
+
+</main>
+
+<footer class="footer">
+  Data sourced from Cricket database · Qualifying criteria: &gt;150 runs AND &gt;5 wickets in a single IPL season · Indian and domestic players only · Overseas players excluded based on international representation
+</footer>
+
+<script>
+const raw = [
+  {s:'2022',p:'R Ashwin',r:191,w:12},
+  {s:'2022',p:'KH Pandya',r:183,w:10},
+  {s:'2022',p:'HH Pandya',r:487,w:8},
+  {s:'2022',p:'AR Patel',r:182,w:6},
+  {s:'2023',p:'RA Jadeja',r:190,w:20},
+  {s:'2023',p:'AR Patel',r:283,w:11},
+  {s:'2023',p:'KH Pandya',r:188,w:9},
+  {s:'2024',p:'AR Patel',r:235,w:11},
+  {s:'2024',p:'HH Pandya',r:216,w:11},
+  {s:'2024',p:'RA Jadeja',r:267,w:8},
+  {s:'2024',p:'Shahbaz Ahmed',r:215,w:7},
+  {s:'2025',p:'HH Pandya',r:224,w:14},
+  {s:'2025',p:'RA Jadeja',r:301,w:10},
+  {s:'2026',p:'KH Pandya',r:226,w:14},
+  {s:'2026',p:'AR Patel',r:173,w:11},
+  {s:'2026',p:'RA Jadeja',r:266,w:10},
+  {s:'2026',p:'Nithish Kumar Reddy',r:302,w:8}
+];
+
+const playerColors = {
+  'RA Jadeja':           '#1a6b3c',
+  'HH Pandya':           '#c8440a',
+  'KH Pandya':           '#1a5c8a',
+  'AR Patel':            '#7c3b9e',
+  'R Ashwin':            '#0f7a6e',
+  'Shahbaz Ahmed':       '#b07c10',
+  'Nithish Kumar Reddy': '#993556'
+};
+const playerLabels = {
+  'RA Jadeja':'Jadeja','HH Pandya':'H Pandya','KH Pandya':'K Pandya',
+  'AR Patel':'Axar Patel','R Ashwin':'Ashwin','Shahbaz Ahmed':'Shahbaz',
+  'Nithish Kumar Reddy':'Nithish KR'
+};
+
+const players = [...new Set(raw.map(d=>d.p))];
+document.getElementById('legend').innerHTML = players.map(p=>`
+  <div class="legend-item">
+    <div class="legend-dot" style="background:${playerColors[p]||'#888'}"></div>
+    <span>${playerLabels[p]||p}</span>
+  </div>`).join('');
+
+let chartInst = null;
+
+function getFiltered(f) {
+  if (f==='all') return raw;
+  if (f.startsWith('season:')) return raw.filter(d=>d.s===f.slice(7));
+  return raw;
+}
+
+function buildDatasets(data) {
+  const byPlayer = {};
+  data.forEach(d=>{
+    if (!byPlayer[d.p]) byPlayer[d.p]=[];
+    byPlayer[d.p].push({x:d.r,y:d.w,r:Math.max(7,d.w*1.5),player:d.p,season:d.s,runs:d.r,wickets:d.w});
+  });
+  return Object.entries(byPlayer).map(([p,pts])=>({
+    label:p,
+    data:pts,
+    backgroundColor:(playerColors[p]||'#888')+'99',
+    borderColor:playerColors[p]||'#888',
+    borderWidth:2
+  }));
+}
+
+function renderChart(data) {
+  const ctx = document.getElementById('bubbleChart').getContext('2d');
+  if (chartInst) chartInst.destroy();
+  chartInst = new Chart(ctx,{
+    type:'bubble',
+    data:{datasets:buildDatasets(data)},
+    options:{
+      responsive:true,
+      plugins:{legend:{display:false},tooltip:{enabled:false}},
+      scales:{
+        x:{
+          title:{display:true,text:'Runs',color:'#6b6b5e',font:{size:12,family:'Barlow, sans-serif'}},
+          ticks:{color:'#6b6b5e',font:{size:11}},
+          grid:{color:'rgba(0,0,0,0.06)'},
+          min:150
+        },
+        y:{
+          title:{display:true,text:'Wickets',color:'#6b6b5e',font:{size:12,family:'Barlow, sans-serif'}},
+          ticks:{color:'#6b6b5e',font:{size:11}},
+          grid:{color:'rgba(0,0,0,0.06)'},
+          min:5
+        }
+      },
+      onHover:(e,els,chart)=>{
+        const tip=document.getElementById('tip');
+        const canvas=document.getElementById('bubbleChart');
+        if(els.length){
+          const d=chart.data.datasets[els[0].datasetIndex].data[els[0].index];
+          tip.style.display='block';
+          tip.style.left=(e.native.offsetX+14)+'px';
+          tip.style.top=(e.native.offsetY-14)+'px';
+          tip.innerHTML=`<strong>${d.player}</strong><br>${d.season}<br>${d.runs} runs · ${d.wickets} wickets`;
+          canvas.style.cursor='pointer';
+        } else {
+          tip.style.display='none';
+          canvas.style.cursor='default';
+        }
+      }
+    }
+  });
+}
+
+function renderTable(data) {
+  const sorted=[...data].sort((a,b)=>b.w-a.w||b.r-a.r);
+  document.getElementById('tableBody').innerHTML=sorted.map(d=>`
+    <div class="table-row">
+      <div class="p-name" style="color:${playerColors[d.p]||'#141414'}">${d.p}<span class="p-season">${d.s}</span></div>
+      <div class="num">${d.r}</div>
+      <div class="wkt-val">${d.w}</div>
+      <div class="num" style="color:#6b6b5e">${d.s}</div>
+    </div>`).join('');
+}
+
+document.getElementById('filters').addEventListener('click',e=>{
+  const f=e.target.dataset.f;
+  if(!f) return;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.toggle('active',b.dataset.f===f));
+  const filtered=getFiltered(f);
+  renderChart(filtered);
+  renderTable(filtered);
+});
+
+renderChart(raw);
+renderTable(raw);
+</script>
+</body>
+</html>
