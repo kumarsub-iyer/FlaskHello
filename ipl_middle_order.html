@@ -222,6 +222,55 @@
   }
   .insight-card.dark .ic-text { color: rgba(255,255,255,0.55); }
 
+  .site-nav-menu { margin-left: auto; position: relative; }
+  .menu-btn {
+    background: none; border: none; cursor: pointer;
+    display: flex; flex-direction: column; justify-content: center;
+    gap: 5px; padding: 8px; border-radius: 6px;
+    transition: background 0.15s;
+  }
+  .menu-btn:hover { background: rgba(255,255,255,0.08); }
+  .menu-btn span {
+    display: block; width: 22px; height: 2px;
+    background: #fff; border-radius: 1px;
+    transition: transform 0.2s, opacity 0.2s;
+  }
+  .menu-btn.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  .menu-btn.open span:nth-child(2) { opacity: 0; }
+  .menu-btn.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+  .nav-dropdown {
+    display: none; position: absolute; top: calc(100% + 8px); right: 0;
+    background: #1a1a1a; border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px; min-width: 210px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    overflow: hidden; z-index: 100;
+  }
+  .nav-dropdown.open { display: block; }
+  .nav-dropdown-header {
+    padding: 10px 14px 8px;
+    font-size: 10px; font-weight: 500; letter-spacing: 0.1em;
+    text-transform: uppercase; color: rgba(255,255,255,0.3);
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+  }
+  .nav-dropdown a {
+    display: flex; align-items: center; gap: 10px;
+    padding: 11px 14px; text-decoration: none;
+    color: rgba(255,255,255,0.85); font-size: 14px;
+    transition: background 0.12s;
+  }
+  .nav-dropdown a:hover { background: rgba(255,255,255,0.06); color: #fff; }
+  .nav-dropdown a .nav-icon {
+    width: 28px; height: 28px; border-radius: 6px;
+    background: rgba(240,192,64,0.15); display: flex;
+    align-items: center; justify-content: center;
+    font-size: 13px; flex-shrink: 0;
+  }
+  .nav-dropdown a .nav-arrow {
+    margin-left: auto; color: rgba(255,255,255,0.25); font-size: 12px;
+  }
+  .nav-dropdown a.active-page .nav-icon { background: rgba(240,192,64,0.25); }
+
   /* ── SITE NAV ── */
   .site-nav {
     background: #000;
@@ -305,6 +354,19 @@
     </div>
     <div class="site-nav-divider"></div>
     <span class="site-nav-sub">IPL · Positions 4 &amp; 5</span>
+    <div class="site-nav-menu">
+      <button class="menu-btn" id="menuBtn" aria-label="Open navigation menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+      <div class="nav-dropdown" id="navDropdown">
+        <div class="nav-dropdown-header">Analysis pages</div>
+        <a href="https://kumariyer.vercel.app/ipl_allrounders" target="_blank" rel="noopener">
+          <span class="nav-icon">🏏</span>
+          IPL All Rounders
+          <span class="nav-arrow">↗</span>
+        </a>
+      </div>
+    </div>
   </div>
 </nav>
 
@@ -366,7 +428,7 @@
           </div>
           <div class="insight-card">
             <div class="ic-label">Explosive finishers</div>
-            <div class="ic-text">Rinku Patidar (SR 170), Pooran (SR 156) and Maxwell (SR 152) are the bottom-right cluster — high risk, high reward. Patidar's SR is the highest of any player with 30+ innings, making him one of the most feared death-over hitters in the competition.</div>
+            <div class="ic-text">Rajat Patidar (SR 170), Pooran (SR 156) and Maxwell (SR 152) are the bottom-right cluster — high risk, high reward. Patidar's SR is the highest of any player with 30+ innings, making him one of the most destructive middle-order hitters in the competition.</div>
           </div>
         </div>
       </div>
@@ -476,7 +538,7 @@
         <div class="insight-row">
           <div class="insight-card dark">
             <div class="ic-label">Strike rate king</div>
-            <div class="ic-text">Rinku Patidar leads all 30 batsmen with a SR of 170.5 — 15 points clear of his nearest rival Klaasen (163.3). For context, he scores nearly 1.7 runs every ball he faces. In a competition that increasingly rewards boundary-hitters at the death, that number is extraordinary.</div>
+            <div class="ic-text">Rajat Patidar leads all 30 batsmen with a SR of 170.5 — 15 points clear of his nearest rival Klaasen (163.3). For context, he scores nearly 1.7 runs every ball he faces. Known for his explosive knocks in knockout games for RCB and LSG, his SR at positions 4 and 5 is the highest of any player with 30+ innings in IPL history.</div>
           </div>
           <div class="insight-card dark">
             <div class="ic-label">The SR vs average trade-off</div>
@@ -807,6 +869,22 @@ function renderDot() {
 }
 document.getElementById('s3Metric').addEventListener('change', e => { s3Metric=e.target.value; renderDot(); });
 document.getElementById('s3MinInn').addEventListener('change', e => { s3MinInn=parseInt(e.target.value); renderDot(); });
+
+/* ── MENU TOGGLE ── */
+const menuBtn = document.getElementById('menuBtn');
+const navDropdown = document.getElementById('navDropdown');
+menuBtn.addEventListener('click', e => {
+  e.stopPropagation();
+  const open = navDropdown.classList.toggle('open');
+  menuBtn.classList.toggle('open', open);
+  menuBtn.setAttribute('aria-expanded', open);
+});
+document.addEventListener('click', () => {
+  navDropdown.classList.remove('open');
+  menuBtn.classList.remove('open');
+  menuBtn.setAttribute('aria-expanded', false);
+});
+navDropdown.addEventListener('click', e => e.stopPropagation());
 
 renderScatter();
 renderBar();

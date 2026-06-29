@@ -45,6 +45,60 @@
     pointer-events: none;
   }
   .hero-inner { max-width: 900px; margin: 0 auto; position: relative; }
+
+  /* ── NAV MENU ── */
+  .hero-nav {
+    display: flex; align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.75rem;
+  }
+  .hero-eyebrow { margin-bottom: 0; }
+  .menu-wrap { position: relative; }
+  .menu-btn {
+    background: none; border: none; cursor: pointer;
+    display: flex; flex-direction: column; justify-content: center;
+    gap: 5px; padding: 8px; border-radius: 4px;
+    transition: background 0.15s;
+  }
+  .menu-btn:hover { background: rgba(255,255,255,0.08); }
+  .menu-btn span {
+    display: block; width: 22px; height: 2px;
+    background: var(--cream); border-radius: 1px;
+    transition: transform 0.2s, opacity 0.2s;
+  }
+  .menu-btn.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  .menu-btn.open span:nth-child(2) { opacity: 0; }
+  .menu-btn.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+  .nav-dropdown {
+    display: none; position: absolute; top: calc(100% + 8px); right: 0;
+    background: #1e1e1e; border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 6px; min-width: 220px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+    overflow: hidden; z-index: 100;
+  }
+  .nav-dropdown.open { display: block; }
+  .nav-dropdown-header {
+    padding: 10px 14px 8px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.12em;
+    text-transform: uppercase; color: rgba(255,255,255,0.3);
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+  }
+  .nav-dropdown a {
+    display: flex; align-items: center; gap: 10px;
+    padding: 11px 14px; text-decoration: none;
+    color: rgba(255,255,255,0.8); font-size: 14px;
+    font-family: 'Barlow', sans-serif;
+    transition: background 0.12s;
+  }
+  .nav-dropdown a:hover { background: rgba(255,255,255,0.06); color: #fff; }
+  .nav-icon {
+    width: 28px; height: 28px; border-radius: 5px;
+    background: rgba(200,153,42,0.15);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; flex-shrink: 0;
+  }
   .hero-eyebrow {
     font-family: 'Barlow Condensed', sans-serif;
     font-size: 12px; font-weight: 700;
@@ -190,7 +244,22 @@
 
 <header class="hero">
   <div class="hero-inner">
-    <div class="hero-eyebrow">IPL 2022 – 2026 · Indian &amp; domestic players</div>
+    <div class="hero-nav">
+      <div class="hero-eyebrow">IPL 2022 – 2026 · Indian &amp; domestic players</div>
+      <div class="menu-wrap">
+        <button class="menu-btn" id="menuBtn" aria-label="Open navigation menu" aria-expanded="false">
+          <span></span><span></span><span></span>
+        </button>
+        <div class="nav-dropdown" id="navDropdown">
+          <div class="nav-dropdown-header">Analysis pages</div>
+          <a href="https://kumariyer.vercel.app/ipl_middle_order" target="_blank" rel="noopener">
+            <span class="nav-icon">📊</span>
+            IPL Middle Order Study
+            <span class="nav-arrow">↗</span>
+          </a>
+        </div>
+      </div>
+    </div>
     <h1 class="hero-title">The <em>All-Rounders</em><br>who dominated</h1>
     <p class="hero-desc">Players who scored more than 150 runs <em>and</em> took more than 5 wickets in a single IPL season — Indian and domestic players only, across the last five seasons.</p>
     <div class="hero-stats">
@@ -404,6 +473,22 @@ document.getElementById('filters').addEventListener('click',e=>{
   renderChart(filtered);
   renderTable(filtered);
 });
+
+/* ── MENU TOGGLE ── */
+const menuBtn = document.getElementById('menuBtn');
+const navDropdown = document.getElementById('navDropdown');
+menuBtn.addEventListener('click', e => {
+  e.stopPropagation();
+  const open = navDropdown.classList.toggle('open');
+  menuBtn.classList.toggle('open', open);
+  menuBtn.setAttribute('aria-expanded', open);
+});
+document.addEventListener('click', () => {
+  navDropdown.classList.remove('open');
+  menuBtn.classList.remove('open');
+  menuBtn.setAttribute('aria-expanded', false);
+});
+navDropdown.addEventListener('click', e => e.stopPropagation());
 
 renderChart(raw);
 renderTable(raw);
