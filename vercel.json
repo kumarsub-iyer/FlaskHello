@@ -4,12 +4,16 @@
     { "src": "simple_linear_reg_chart.html", "use": "@vercel/static" },
     { "src": "ipl_indian_allrounders.html", "use": "@vercel/static" },
     { "src": "ipl_middle_order.html", "use": "@vercel/static" },
+    { "src": "og-middle-order.png", "use": "@vercel/static" },
+    { "src": "og-allrounders.png", "use": "@vercel/static" },
     { "src": "app.py", "use": "@vercel/python"}
   ],
   "routes": [
     { "src": "/slr_test", "dest": "/simple_linear_reg_chart.html" },
     { "src": "/ipl_allrounders", "dest": "/ipl_indian_allrounders.html" },
     { "src": "/ipl_middle_order", "dest": "/ipl_middle_order.html" },
+    { "src": "/og-middle-order.png", "dest": "/og-middle-order.png" },
+    { "src": "/og-allrounders.png", "dest": "/og-allrounders.png" },
     { "src": "/(.*)", "dest": "app.py"}
   ]
 }
